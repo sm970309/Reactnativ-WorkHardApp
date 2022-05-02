@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, TouchableOpacity, TouchableHighlight, TextInput } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, TouchableHighlight, TextInput} from 'react-native';
 import { useState } from 'react';
 import { theme } from './color';
 
@@ -8,8 +8,22 @@ export default function App() {
   const travel = () => setWorking(false);
   const work = () => setWorking(true);
   const [text,setText] = useState('');
+  const [toDos,setToDos] = useState({});
+  
+  
   const onChangeText = (event) =>{
     setText(event)
+
+  }
+  const addToDo = () =>{
+    if (text===""){
+      return
+    }
+    const newToDos = {...toDos,
+      [Date.now()]:{text,work:working}
+    }
+    setToDos(newToDos);
+    setText("");    
   }
   return (
     <View style={styles.container}>
@@ -24,10 +38,12 @@ export default function App() {
       </View>
       <View>
         <TextInput
+          value={text}
+          onSubmitEditing={addToDo}
           onChangeText={onChangeText}
+          returnKeyType="done"
           placeholder={working ? "Add a To Do" : "Where do you wanna go?"}
           style={styles.input} />
-        <Text style={{ ...styles.btnText, color: 'white' }}>{text}</Text>
       </View>
     </View>
   );
