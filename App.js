@@ -1,42 +1,59 @@
 import { StatusBar } from 'expo-status-bar';
-import { ActivityIndicator, StyleSheet, Text, View, TouchableOpacity, TouchableHighlight, TextInput, ScrollView} from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, View, TouchableOpacity, TouchableHighlight, TextInput, ScrollView, Alert } from 'react-native';
 import { useState, useEffect } from 'react';
 import { theme } from './color';
 import AsyncStorage from '@react-native-async-storage/async-storage'
-const STORAGE_KEY ="@toDos";
+import { EvilIcons } from '@expo/vector-icons';
+
+const STORAGE_KEY = "@toDos";
 
 export default function App() {
   const [working, setWorking] = useState(true);
   const travel = () => setWorking(false);
   const work = () => setWorking(true);
-  const [text,setText] = useState('');
-  const [toDos,setToDos] = useState({});
-  const [loading,setLoading] = useState(true);
-  
-  const onChangeText = (event) =>{
+  const [text, setText] = useState('');
+  const [toDos, setToDos] = useState({});
+  const [loading, setLoading] = useState(true);
+
+  const onChangeText = (event) => {
     setText(event)
   }
-  const saveToDos = async (toSave) =>{
-    await AsyncStorage.setItem(STORAGE_KEY,JSON.stringify(toSave))
+  const saveToDos = async (toSave) => {
+    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(toSave))
   }
-  const loadToDos = async() =>{
+  const loadToDos = async () => {
     const s = await AsyncStorage.getItem(STORAGE_KEY)
     setToDos(JSON.parse(s));
     setLoading(false)
   }
-  useEffect(()=>{
+  useEffect(() => {
     loadToDos();
-  },[])
-  const addToDo = async () =>{
-    if (text===""){
+  }, [])
+  const addToDo = async () => {
+    if (text === "") {
       return
     }
-    const newToDos = {...toDos,
-      [Date.now()]:{text,working}
+    const newToDos = {
+      ...toDos,
+      [Date.now()]: { text, working }
     }
     setToDos(newToDos);
     await saveToDos(newToDos)
-    setText("");    
+    setText("");
+  }
+  const deleteToDo = async (key) =>{
+    Alert.alert("Delete To Do", "Are you sure?",[
+      {text:"Cancel"},
+      {text:"Sure",onPress:async ()=>{
+        const newToDos = {...toDos};
+        delete newToDos[key]
+        setToDos(newToDos);
+        await saveToDos(newToDos);
+        },
+      }
+    ])
+    return;
+    
   }
   return (
     <View style={styles.container}>
@@ -59,18 +76,21 @@ export default function App() {
           style={styles.input} />
       </View>
       {loading ? (
-      <View style={{justifyContent:'center',alignContent:'center',flex:1}}>
-        <ActivityIndicator color="white" size="large"/>
-      </View>
-      ):
-      (<ScrollView style={{ marginTop:30}}>{
-       Object.keys(toDos).map(key=>
-       toDos[key].working ===working ? (
-       <View style={{...styles.toDos}} key={key}>
-         <Text style={styles.txt}>{toDos[key].text}</Text>
-       </View>) :null)
-      }
-      </ScrollView>)}
+        <View style={{ justifyContent: 'center', alignContent: 'center', flex: 1 }}>
+          <ActivityIndicator color="white" size="large" />
+        </View>
+      ) :
+        (<ScrollView style={{ marginTop: 30 }}>{
+          Object.keys(toDos).map(key =>
+            toDos[key].working === working ? (
+              <View style={{ ...styles.toDos }} key={key}>
+                <Text style={styles.txt}>{toDos[key].text}</Text>
+                <TouchableOpacity onPress={()=>deleteToDo(key)}>
+                <EvilIcons name="trash" size={24} color='white' />
+                </TouchableOpacity>
+              </View>) : null)
+        }
+        </ScrollView>)}
     </View>
   );
 }
@@ -98,16 +118,17 @@ const styles = StyleSheet.create({
     marginTop: 20,
     fontSize: 18
   },
-  toDos:{
-    backgroundColor:theme.toDoBg,
-    marginBottom:10,
-    paddingVertical:20,
-    paddingHorizontal:20,
-    borderRadius:15
+  toDos: {
+    backgroundColor: theme.toDoBg,
+    marginBottom: 10,
+    paddingVertical: 20,
+    paddingHorizontal: 20,
+    borderRadius: 15,
+    flexDirection: 'row',
+    justifyContent: 'space-between'
   },
-  txt:{
-    fontSize:16,
-    color:'white',
-    
+  txt: {
+    fontSize: 16,
+    color: 'white',
   }
 });
