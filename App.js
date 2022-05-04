@@ -59,9 +59,9 @@ export default function App() {
     <View style={styles.container}>
       <StatusBar style="auto" />
       <View style={styles.header}>
-        <TouchableOpacity onPress={work}>
+        <TouchableHighlight onPress={work}>
           <Text style={{ ...styles.btnText, color: working ? 'white' : theme.grey }}>Work</Text>
-        </TouchableOpacity>
+        </TouchableHighlight>
         <TouchableHighlight onPress={travel}>
           <Text style={{ ...styles.btnText, color: !working ? 'white' : theme.grey }}>Travel</Text>
         </TouchableHighlight>
