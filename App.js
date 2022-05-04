@@ -1,13 +1,16 @@
 import { StatusBar } from 'expo-status-bar';
-import { ActivityIndicator, StyleSheet, Text, View, TouchableOpacity, TouchableHighlight, TextInput, ScrollView, Alert } from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, View, TouchableOpacity, TouchableHighlight, TextInput, ScrollView, Alert} from 'react-native';
 import { useState, useEffect } from 'react';
 import { theme } from './color';
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { EvilIcons } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons'; 
+
 
 const STORAGE_KEY = "@toDos";
 
 export default function App() {
+  const checked = false;
   const [working, setWorking] = useState(() =>{loadState});
   const travel = async () => {
     await saveState(false);
@@ -20,6 +23,16 @@ export default function App() {
   const [text, setText] = useState('');
   const [toDos, setToDos] = useState({});
   const [loading, setLoading] = useState(true);
+
+  const changeChecked = async (key) =>{
+    const newchecked = toDos[key].checked? false:true
+    const newworking = toDos[key].working
+    const newtext = toDos[key].text
+    const newToDos = {...toDos}
+    newToDos[key]={checked:newchecked,working:newworking,text:newtext};
+    setToDos(newToDos);
+    await saveToDos(newToDos);
+  }
 
   const saveState = async(toSave) =>{
     await AsyncStorage.setItem('state',JSON.stringify(toSave))
@@ -50,7 +63,7 @@ export default function App() {
     }
     const newToDos = {
       ...toDos,
-      [Date.now()]: { text, working }
+      [Date.now()]: { text, working, checked }
     }
     setToDos(newToDos);
     await saveToDos(newToDos)
@@ -99,10 +112,21 @@ export default function App() {
           Object.keys(toDos).map(key =>
             toDos[key].working === working ? (
               <View style={{ ...styles.toDos }} key={key}>
-                <Text style={styles.txt}>{toDos[key].text}</Text>
+                <TouchableOpacity style={{flexDirection:'row'}} onPress={()=>changeChecked(key)}>
+                  {!toDos[key].checked ? 
+                  <View style={{flexDirection:'row'}}>
+                    <Feather name="square" size={24} color="white" style={{marginRight:10}}/>
+                    <Text style={styles.txt}>{toDos[key].text}</Text>
+                  </View>
+                  :<View style={{flexDirection:'row'}}>
+                    <Feather name="check-square" size={24} color="white" style={{marginRight:10 }}/>
+                    <Text style={styles.txt_checked}>{toDos[key].text}</Text>
+                </View>}
+                </TouchableOpacity>
                 <TouchableOpacity onPress={()=>deleteToDo(key)}>
                 <EvilIcons name="trash" size={24} color='white' />
                 </TouchableOpacity>
+                
               </View>) : null)
         }
         </ScrollView>)}
@@ -145,5 +169,10 @@ const styles = StyleSheet.create({
   txt: {
     fontSize: 16,
     color: 'white',
+  },
+  txt_checked: {
+    fontSize: 16,
+    color: 'white',
+    textDecorationLine:'line-through'
   }
 });
