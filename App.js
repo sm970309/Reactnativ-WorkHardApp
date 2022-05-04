@@ -8,19 +8,33 @@ import { EvilIcons } from '@expo/vector-icons';
 const STORAGE_KEY = "@toDos";
 
 export default function App() {
-  const [working, setWorking] = useState(true);
-  const travel = () => setWorking(false);
-  const work = () => setWorking(true);
+  const [working, setWorking] = useState(() =>{loadState});
+  const travel = async () => {
+    await saveState(false);
+    setWorking(false);
+  }
+  const work = async () => {
+    await saveState(true);
+    setWorking(true);
+  }
   const [text, setText] = useState('');
   const [toDos, setToDos] = useState({});
   const [loading, setLoading] = useState(true);
 
+  const saveState = async(toSave) =>{
+    await AsyncStorage.setItem('state',JSON.stringify(toSave))
+  }
+  const loadState = async() =>{
+    const s = await AsyncStorage.getItem('state')
+    setWorking(JSON.parse(s))
+  }
   const onChangeText = (event) => {
     setText(event)
   }
   const saveToDos = async (toSave) => {
     await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(toSave))
   }
+  
   const loadToDos = async () => {
     const s = await AsyncStorage.getItem(STORAGE_KEY)
     setToDos(JSON.parse(s));
@@ -28,6 +42,7 @@ export default function App() {
   }
   useEffect(() => {
     loadToDos();
+    loadState();
   }, [])
   const addToDo = async () => {
     if (text === "") {
