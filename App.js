@@ -12,6 +12,7 @@ const STORAGE_KEY = "@toDos";
 export default function App() {
   const checked = false;
   const [working, setWorking] = useState(() =>{loadState});
+  const [modify,setModify] = useState(false);
   const travel = async () => {
     await saveState(false);
     setWorking(false);
@@ -53,10 +54,12 @@ export default function App() {
     setToDos(JSON.parse(s));
     setLoading(false)
   }
+
   useEffect(() => {
     loadToDos();
     loadState();
   }, [])
+
   const addToDo = async () => {
     if (text === "") {
       return
@@ -81,7 +84,10 @@ export default function App() {
       }
     ])
     return;
-    
+  
+  }
+  const modifyToDo = (key) =>{
+    Alert.alert("We're sorry","We will update soon :)")
   }
   return (
     <View style={styles.container}>
@@ -123,9 +129,14 @@ export default function App() {
                     <Text style={styles.txt_checked}>{toDos[key].text}</Text>
                 </View>}
                 </TouchableOpacity>
+                <View style={{flexDirection:'row'}}>
+                <TouchableOpacity style={{marginRight:20}}onPress={() => modifyToDo(key)}>
+                <Feather name="tool" size={18} color='white' />
+                </TouchableOpacity>
                 <TouchableOpacity onPress={()=>deleteToDo(key)}>
                 <EvilIcons name="trash" size={24} color='white' />
                 </TouchableOpacity>
+                </View>
                 
               </View>) : null)
         }
