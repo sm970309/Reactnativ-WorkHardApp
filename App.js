@@ -1,6 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
 import { ActivityIndicator, StyleSheet, Text, View, TouchableOpacity, TouchableHighlight, TextInput, ScrollView, Alert} from 'react-native';
-import { useState, useEffect } from 'react';
+import { useState, useEffect ,useRef} from 'react';
 import { theme } from './color';
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { EvilIcons } from '@expo/vector-icons';
@@ -12,7 +12,8 @@ const STORAGE_KEY = "@toDos";
 export default function App() {
   const checked = false;
   const [working, setWorking] = useState(() =>{loadState});
-  const [modify,setModify] = useState(false);
+  const modify = false;
+
   const travel = async () => {
     await saveState(false);
     setWorking(false);
@@ -22,6 +23,7 @@ export default function App() {
     setWorking(true);
   }
   const [text, setText] = useState('');
+  const [new_text,setNewText] = useState('');
   const [toDos, setToDos] = useState({});
   const [loading, setLoading] = useState(true);
 
@@ -29,12 +31,22 @@ export default function App() {
     const newchecked = toDos[key].checked? false:true
     const newworking = toDos[key].working
     const newtext = toDos[key].text
+    const newmodify = toDos[key].modify
     const newToDos = {...toDos}
-    newToDos[key]={checked:newchecked,working:newworking,text:newtext};
+    newToDos[key]={checked:newchecked,working:newworking,text:newtext,modify:newmodify};
     setToDos(newToDos);
     await saveToDos(newToDos);
   }
-
+  const modifyToDo = async (key) =>{
+    const newmodify = toDos[key].modify? false:true
+    const newworking = toDos[key].working
+    const newtext = toDos[key].text
+    const newchecked = toDos[key].checked
+    const newToDos = {...toDos}
+    newToDos[key]={checked:newchecked,working:newworking,text:newtext,modify:newmodify};
+    setToDos(newToDos);
+    await saveToDos(newToDos);
+  }
   const saveState = async(toSave) =>{
     await AsyncStorage.setItem('state',JSON.stringify(toSave))
   }
@@ -44,6 +56,12 @@ export default function App() {
   }
   const onChangeText = (event) => {
     setText(event)
+  }
+  const onChangeNewText = (event) =>{
+    if (event==''){
+      return
+    }
+    setNewText(event)
   }
   const saveToDos = async (toSave) => {
     await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(toSave))
@@ -66,7 +84,7 @@ export default function App() {
     }
     const newToDos = {
       ...toDos,
-      [Date.now()]: { text, working, checked }
+      [Date.now()]: { text, working, checked, modify }
     }
     setToDos(newToDos);
     await saveToDos(newToDos)
@@ -86,8 +104,15 @@ export default function App() {
     return;
   
   }
-  const modifyToDo = (key) =>{
-    Alert.alert("We're sorry","We will update soon :)")
+  const changeText = async(key) =>{
+    const newmodify = toDos[key].modify?false:true
+    const newworking = toDos[key].working
+    const newtext = new_text
+    const newchecked = toDos[key].checked
+    const newToDos = {...toDos}
+    newToDos[key]={checked:newchecked,working:newworking,text:newtext,modify:newmodify};
+    setToDos(newToDos);
+    await saveToDos(newToDos);
   }
   return (
     <View style={styles.container}>
@@ -107,7 +132,9 @@ export default function App() {
           onChangeText={onChangeText}
           returnKeyType="done"
           placeholder={working ? "Add a To Do" : "Where do you wanna go?"}
-          style={styles.input} />
+          style={styles.input} 
+          blurOnSubmit={false}
+          />
       </View>
       {loading ? (
         <View style={{ justifyContent: 'center', alignContent: 'center', flex: 1 }}>
@@ -122,11 +149,32 @@ export default function App() {
                   {!toDos[key].checked ? 
                   <View style={{flexDirection:'row'}}>
                     <Feather name="square" size={24} color="white" style={{marginRight:10}}/>
-                    <Text style={styles.txt}>{toDos[key].text}</Text>
+                    {!toDos[key].modify?
+                    <Text style={styles.txt}>{toDos[key].text}</Text>:
+                    <TextInput
+                      onChangeText={onChangeNewText}
+                      style={{color:'white'}}
+                      placeholder='Click here and modify'
+                      placeholderTextColor={theme.grey}
+                      onSubmitEditing={() => changeText(key)} 
+                      autoFocus={true}
+                      onBlur={()=>changeText(key)}
+                    />}
                   </View>
                   :<View style={{flexDirection:'row'}}>
                     <Feather name="check-square" size={24} color="white" style={{marginRight:10 }}/>
-                    <Text style={styles.txt_checked}>{toDos[key].text}</Text>
+                    {!toDos[key].modify?
+                    <Text style={styles.txt_checked}>{toDos[key].text}</Text>:
+                    <TextInput
+                      onChangeText={onChangeNewText}
+                      style={{color:'white'}}
+                      placeholder='Click here and modify'
+                      placeholderTextColor={theme.grey}
+                      onSubmitEditing={() =>changeText(key)} 
+                      autoFocus={true}
+                      onBlur={()=>changeText(key)}
+                      
+                    />}
                 </View>}
                 </TouchableOpacity>
                 <View style={{flexDirection:'row'}}>
