@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Work&Travel",
+    "name": "WorkAndTravel",
     "slug": "worktravelapp",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -23,7 +23,8 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
-      }
+      },
+      "package": "com.sm970309.worktravelapp"
     },
     "web": {
       "favicon": "./assets/favicon.png"
