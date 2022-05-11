@@ -13,6 +13,10 @@ export default function App() {
   const checked = false;
   const [working, setWorking] = useState(() =>{loadState});
   const modify = false;
+  const [text, setText] = useState('');
+  const [new_text,setNewText] = useState('');
+  const [toDos, setToDos] = useState({});
+  const [loading, setLoading] = useState(true);
 
   const travel = async () => {
     await saveState(false);
@@ -22,10 +26,7 @@ export default function App() {
     await saveState(true);
     setWorking(true);
   }
-  const [text, setText] = useState('');
-  const [new_text,setNewText] = useState('');
-  const [toDos, setToDos] = useState({});
-  const [loading, setLoading] = useState(true);
+  
 
   const changeChecked = async (key) =>{
     const newchecked = toDos[key].checked? false:true
@@ -57,11 +58,13 @@ export default function App() {
   const onChangeText = (event) => {
     setText(event)
   }
-  const onChangeNewText = (event) =>{
-    if (event==''){
-      return
+  const onChangeNewText = (new_text,old_text) =>{
+    if (new_text.trim()==''){
+      setNewText(old_text)
     }
-    setNewText(event)
+    else{
+      setNewText(new_text)
+    }
   }
   const saveToDos = async (toSave) => {
     await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(toSave))
@@ -152,7 +155,8 @@ export default function App() {
                     {!toDos[key].modify?
                     <Text style={styles.txt}>{toDos[key].text}</Text>:
                     <TextInput
-                      onChangeText={onChangeNewText}
+                      onFocus={() => setNewText(toDos[key].text)}
+                      onChangeText={(text) =>onChangeNewText(text,toDos[key].text)}
                       style={{color:'white'}}
                       placeholder='Click here and modify'
                       placeholderTextColor={theme.grey}
@@ -166,14 +170,14 @@ export default function App() {
                     {!toDos[key].modify?
                     <Text style={styles.txt_checked}>{toDos[key].text}</Text>:
                     <TextInput
-                      onChangeText={onChangeNewText}
+                      onFocus={() => setNewText(toDos[key].text)}
+                      onChangeText={(text) =>onChangeNewText(text,toDos[key].text)}
                       style={{color:'white'}}
                       placeholder='Click here and modify'
                       placeholderTextColor={theme.grey}
                       onSubmitEditing={() =>changeText(key)} 
                       autoFocus={true}
                       onBlur={()=>changeText(key)}
-                      
                     />}
                 </View>}
                 </TouchableOpacity>
@@ -181,6 +185,7 @@ export default function App() {
                 <TouchableOpacity style={{marginRight:20}}onPress={() => modifyToDo(key)}>
                 <Feather name="tool" size={18} color='white' />
                 </TouchableOpacity>
+                
                 <TouchableOpacity onPress={()=>deleteToDo(key)}>
                 <EvilIcons name="trash" size={24} color='white' />
                 </TouchableOpacity>
